@@ -1,0 +1,21 @@
+#SLURM Script to call Bodhi Barcodes using ONT
+I am using the old demulitplexed results to create new ones with more permissive contraints on Ns, revising one barcode at a time and changing the file name to permissive5 (the amount of permissiveness I am allowing) so that it will not override the old outputs
+
+#!/bin/bash
+#SBATCH -p all.q
+#SBATCH --time=1-00:00:00
+#SBATCH --output=FR_AS_barcode11_output2.out
+#SBATCH --job-name=bc11
+#SBATCH --mail-user=crowleja@oregonstate.edu
+
+cd /nfs7/external/Denver_Lab/Crowley_stuff/Demultiplexed_FR
+
+module load minimap2
+module load samtools
+
+minimap2 -ax map-ont ../FR_reference_NC_033979.fasta SQK-NBD114-24_barcode11.fastq > barcode11_alignment_permissive5.sam
+samtools sort -o barcode11_sorted_permissive5.bam barcode11_alignment_permissive5.sam
+samtools index barcode11_sorted_permissive5.bam
+samtools consensus --cutoff 5 -f fasta barcode11_sorted_permissive5.bam -o barcode11_cp_permissive5.fasta
+minimap2_barcode11.sh (END)
+

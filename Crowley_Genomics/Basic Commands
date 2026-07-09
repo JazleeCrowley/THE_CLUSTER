@@ -1,0 +1,40 @@
+These are the basic commands to use in the server
+
+1.	Search “terminal” in Finder and open the app
+“ssh ONID@hpc.cqls.oregonstate.edu”
+a.	Mine = ssh crowleja@hpc.cqls.oregonstate.edu
+
+#Get to the Denverlab files
+cd /nfs7/external/Denver_Lab
+
+#Figure out where you are
+pwd
+##show the files of where you are
+ls
+##move around the directory
+cd [place/filename]
+##go up one location
+cd ..
+
+
+#To get and put files
+sftp crowleja@files.hpc.oregonstate.edu
+
+
+#create a new slurm script
+nano [new_script_name].sh
+
+##write your new Slurm Script
+##get out of the script
+command X
+Y for yes save
+
+#view a slurm script
+less [filename].sh
+##get out of view slurm
+q
+
+#execute the slurm script
+sbatch [filename].sh
+##check that it's running
+squeue -u $USER
