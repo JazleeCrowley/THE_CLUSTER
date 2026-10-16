@@ -1,5 +1,18 @@
 Here is a map to all of my organization in the hpc Crowley folder
 
+#Denver Lab
+##not sure what is in here
+Alignments.sam
+
+##possibly an fasta file of all the first AS_FR barcodes
+all_barcodes.fa
+
+##Snow Leopard data folder basecalling done by Emily Taylor
+Emily_SnowLeopard/
+
+##used the pod5 files from the first AS_FR to basecall in Dorado. Mistake in this may have been the lack of demultiplexing first
+basecalling1.sh
+
 #Demulitplexed_FR has all of my demultiplexed files that I can use for later
     calling
     
