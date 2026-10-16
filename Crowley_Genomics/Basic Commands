@@ -16,6 +16,8 @@ cd [place/filename]
 ##go up one location
 cd ..
 
+#To put a file into a new folder
+mv filename foldername/
 
 #To get and put files
 sftp crowleja@files.hpc.oregonstate.edu
