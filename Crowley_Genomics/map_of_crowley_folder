@@ -13,6 +13,15 @@ Emily_SnowLeopard/
 ##used the pod5 files from the first AS_FR to basecall in Dorado. Mistake in this may have been the lack of demultiplexing first
 basecalling1.sh
 
+##Brenna Prevelige's Ganoderma files
+BP_SF_GANO/
+
+##not sure if this is a Brenna consensus or my consensus
+consensus.fa
+
+##All My Files
+JCrowley/
+
 #Demulitplexed_FR has all of my demultiplexed files that I can use for later
     calling
     
