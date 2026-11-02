@@ -1,0 +1,29 @@
+#build a PCA genotype likelihoods instead of genotype certainty
+
+##Run this line first
+samtools faidx FR_reference_NC_033979.fasta
+
+##then run this
+angsd -P 4 -b ALL.bamlist -ref FR_reference_NC_033979.fasta -out Results/ALL \
+        -uniqueOnly 0 -remove_bads 1 -only_proper_pairs 1 -trim 0 -baq 1 \
+        -minMapQ 13 -minQ 13 -minInd 4 -setMinDepth 1 -setMaxDepth 400 -doCounts 1 \
+        -GL 1 -doMajorMinor 1 -doMaf 1 \
+        -doGeno 32 -doPost 1
+
+#13=95% certainty, 20=99% confidence
+# minIND=number of individuals in the set that need to have a given read
+
+#Once everything has run
+##go to results file and unzip using
+gunzip ALL.geno.gz
+
+#Create a covariance matrix to preapre the data for PCA
+ngsCovar -probfile Results/ALL.geno -outfile Results/ALL_FirstAS.covar -nind 8 -nsites 24224 -call 0 -norm 0
+
+#Create population labels for R
+##Order of names matters!
+Rscript -e 'write.table(cbind(seq(11,18),rep(1,8),c("SriLankan","Sacred","Sacred","Nepal","Sacred", "SriLankan", "Sacred", "Sacred")), row.names=F, sep="\t", col.names=c("Barcode","IID","CLUSTER"), file="Results/ALL_PCA_FirstAS.clst", quote=F)'
+
+#Generate the plot
+Rscript /local/cluster/ngsTools/Scripts/plotPCA.R -i Results/ALL_FirstAS.covar -c 1-2 -a Results/ALL_PCA_FirstAS.clst -o Results/ALL_PCA_FirstAS.pca.pdf
+evince Results/ALL.pca.pdf
