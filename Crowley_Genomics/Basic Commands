@@ -20,8 +20,10 @@ cd ..
 mv filename foldername/
 
 #To get and put files
+##sign into new terminal using this command
 sftp crowleja@files.hpc.oregonstate.edu
-
+cd #into desire folder
+get #file name
 
 #create a new slurm script
 nano [new_script_name].sh
