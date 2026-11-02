@@ -26,4 +26,6 @@ Rscript -e 'write.table(cbind(seq(11,18),rep(1,8),c("SriLankan","Sacred","Sacred
 
 #Generate the plot
 Rscript /local/cluster/ngsTools/Scripts/plotPCA.R -i Results/ALL_FirstAS.covar -c 1-2 -a Results/ALL_PCA_FirstAS.clst -o Results/ALL_PCA_FirstAS.pca.pdf
-evince Results/ALL.pca.pdf
+
+##this could've done something
+evince Results/ALL_PCA_FirstAS.pca.pdf
