@@ -1,4 +1,4 @@
-#build a PCA genotype likelihoods instead of genotype certainty
+#Build a file of genotype likelihoods using angsd
 
 ##Run this line first
 samtools faidx FR_reference_NC_033979.fasta
@@ -13,6 +13,8 @@ angsd -P 4 -b ALL.bamlist -ref FR_reference_NC_033979.fasta -out Results/ALL \
 #13=95% certainty, 20=99% confidence
 # minIND=number of individuals in the set that need to have a given read
 
+#everything after this angsd part is being run in "NGSTools"
+#build a PCA genotype likelihoods instead of genotype certainty
 #Once everything has run
 ##go to results file and unzip using
 gunzip ALL.geno.gz
