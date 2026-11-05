@@ -5,4 +5,4 @@ seqkit version
 
 #then ask
 
-samtools fastq -F 0x900 barcode11_sorted.bam| seqkit stats -a
+samtools fastq -F 0x900 SQK-NBD114-24_barcode18.bam| seqkit stats -a
