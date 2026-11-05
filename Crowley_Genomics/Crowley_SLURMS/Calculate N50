@@ -1,0 +1,8 @@
+#Calculate N50 from fastqs
+
+#check sequencing kit version
+seqkit version
+
+#then ask
+
+samtools fastq -F 0x900 barcode11_sorted.bam| seqkit stats -a
