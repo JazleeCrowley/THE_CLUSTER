@@ -1,4 +1,4 @@
-#new slurm for basecalling my second round of ONT
+#new slurm for basecalling my second round of ONT to make fastqs
 #named basecall_secondAS.sh   
 
 #!/bin/bash
