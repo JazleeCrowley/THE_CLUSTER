@@ -16,6 +16,9 @@ cd [place/filename]
 ##go up one location
 cd ..
 
+#to make a folder
+mkdir folder_name
+
 #To put a file into a new folder
 mv filename foldername/
 
