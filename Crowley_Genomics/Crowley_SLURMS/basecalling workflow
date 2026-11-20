@@ -1,5 +1,12 @@
+#Step 1: basecall using dorado basecaller
+#Step 2: demultiplex using dorado demux
+#Step 3: trim off barcode using dorado trim
+#Step 4: align to reference using dorado aligner
+
+
 #basecall in dorado and directly make a bam file
 # is balled secondAS_basecall_bam.sh
+#Step 1: secondAS_basecall_bam.sh
 
 #!/bin/bash
 #SBATCH -p cqls_gpu
@@ -28,10 +35,16 @@ dorado basecaller \
     --device cuda:all \
     --recursive \
     sup \
-    "$POD5_DIR" 
+    "$POD5_DIR" \
+--no-trim \
+    #kit name
+    --kit-name SQK-NBD114-24 
 
-    #add a reference
-    --reference
+echo "Basecalling complete!"
+
+
+        #add a reference
+    --reference /nfs7/external/Denver_Lab/JCrowley/Demultiplexed_FR/FR_reference_NC_033979.fasta \
     
 
 echo "Basecalling complete!"
