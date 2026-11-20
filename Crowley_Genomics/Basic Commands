@@ -23,10 +23,16 @@ mv filename foldername/
 ##sign into new terminal using this command
 sftp crowleja@files.hpc.oregonstate.edu
 cd #into desire folder
+##to put a folder 
+put -r "path/to/folder"
+##then allow to upload
 get #file name
 
 #create a new slurm script
 nano [new_script_name].sh
+
+#rename a file
+mv old_filename.txt new_filename.pod5
 
 ##write your new Slurm Script
 ##get out of the script
