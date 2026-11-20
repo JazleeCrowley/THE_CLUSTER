@@ -6,7 +6,8 @@
 
 #basecall in dorado and directly make a bam file
 # is balled secondAS_basecall_bam.sh
-#Step 1: secondAS_basecall_bam.sh
+
+#STEP 1: secondAS_basecall_bam.sh
 
 #!/bin/bash
 #SBATCH -p cqls_gpu
@@ -43,9 +44,52 @@ dorado basecaller \
 echo "Basecalling complete!"
 
 
+
+#STEP 2: demultiplex using demultiplex_AS2_bams.sh
+#!/bin/bash
+#SBATCH -p cqls_gpu
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=64G
+#SBATCH --time=1-00:00:00
+#SBATCH --output=demux2_%j.out
+#SBATCH --error=demux2_%j.err
+#SBATCH --job-name=Chloroplast_AS2_Demux
+#SBATCH --mail-user=crowleja@oregonstate.edu
+
+set -euo pipefail
+
+# Input BAM from Dorado basecalling
+INPUT_BAM="/nfs7/external/Denver_Lab/JCrowley/basecalled_secondAS_bams/AS2_basecalled.bam"
+
+# Output directory for demultiplexed BAMs
+DEMUX_DIR="/nfs7/external/Denver_Lab/JCrowley/demultiplexed_secondAS_bams"
+
+# Create output directory
+mkdir -p "$DEMUX_DIR"
+
+echo "Starting demultiplexing: $(date)"
+
+# Demultiplex reads using existing barcode classifications
+dorado demux \
+    --threads 16 \
+    --output-dir "$DEMUX_DIR" \
+    --no-classify \
+    "$INPUT_BAM"
+
+echo "Demultiplexing complete!"
+echo "Output directory: $DEMUX_DIR"
+
+ls -lh "$DEMUX_DIR"
+
+echo "Finished: $(date)"
+
+
+#STEP 3:
+
+
         #add a reference
     --reference /nfs7/external/Denver_Lab/JCrowley/Demultiplexed_FR/FR_reference_NC_033979.fasta \
     
-
-echo "Basecalling complete!"
 
