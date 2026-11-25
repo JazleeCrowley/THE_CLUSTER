@@ -86,10 +86,123 @@ ls -lh "$DEMUX_DIR"
 echo "Finished: $(date)"
 
 
-#STEP 3:
+#STEP 3: trimming the bams (because ONT recommends not doing -no--trim) secondAS_trim.sh
+#creating a for loop so that we don't have to redo each file
+
+#!/bin/bash
+#SBATCH -p cqls_gpu
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=32G
+#SBATCH --time=1-00:00:00
+#SBATCH --output=trim2_%j.out
+#SBATCH --error=trim2_%j.err
+#SBATCH --job-name=Chloroplast_AS2_Trim
+
+set -euo pipefail
+
+# Input directory containing demultiplexed BAM files
+DEMUX_DIR="/nfs7/external/Denver_Lab/JCrowley/demultiplexed_secondAS_bams"
+
+# Output directory for trimmed BAM files
+TRIM_DIR="/nfs7/external/Denver_Lab/JCrowley/trimmed_secondAS_bams"
+
+# Create output directory
+mkdir -p "$TRIM_DIR"
+
+echo "Starting trimming: $(date)"
+
+# Loop through every barcode BAM file
+for BAM in "$DEMUX_DIR"/SQK-NBD114-24_barcode*.bam
+do
+
+    # Extract sample name
+    SAMPLE=$(basename "$BAM" .bam)
+
+    echo "Trimming $SAMPLE"
+
+    dorado trim \
+        "$BAM" \
+        --sequencing-kit SQK-NBD114-24 \
+        --threads 16 \
+        > "$TRIM_DIR/${SAMPLE}.trimmed.bam"
+
+    echo "Finished trimming $SAMPLE"
+
+done
+
+echo "All trimming complete!"
+echo "Output directory: $TRIM_DIR"
+
+ls -lh "$TRIM_DIR"
+
+echo "Finished: $(date)"
 
 
-        #add a reference
-    --reference /nfs7/external/Denver_Lab/JCrowley/Demultiplexed_FR/FR_reference_NC_033979.fasta \
+
+Step 4: align to a reference secondAS_reference_align.sh
+
+#!/bin/bash
+#SBATCH -p cqls_gpu
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=32G
+#SBATCH --time=2-00:00:00
+#SBATCH --output=align2_%j.out
+#SBATCH --error=align2_%j.err
+#SBATCH --job-name=Chloroplast_AS2_Align
+
+set -euo pipefail
+
+# Input directory containing trimmed BAM files
+TRIM_DIR="/nfs7/external/Denver_Lab/JCrowley/trimmed_secondAS_bams"
+
+# Reference chloroplast genome
+REFERENCE="/nfs7/external/Denver_Lab/JCrowley/Demultiplexed_FR/FR_reference_NC_033979.fasta"
+
+# Output directory for aligned BAM files
+ALIGN_DIR="/nfs7/external/Denver_Lab/JCrowley/aligned_secondAS_bams"
+
+# Create output directory
+mkdir -p "$ALIGN_DIR"
+
+echo "Starting alignment: $(date)"
+
+# Check that reference and input files exist
+if [[ ! -f "$REFERENCE" ]]; then
+    echo "ERROR: Reference FASTA not found!"
+    exit 1
+fi
+
+# Process each trimmed barcode BAM individually
+for BAM in "$TRIM_DIR"/*.trimmed.bam
+do
+
+    SAMPLE=$(basename "$BAM" .trimmed.bam)
+
+    echo "Aligning $SAMPLE"
+
+    dorado aligner \
+        -t 8 \
+        "$REFERENCE" \
+        "$BAM" \
+        | samtools sort \
+            -@ 8 \
+            -o "$ALIGN_DIR/${SAMPLE}.aligned.sorted.bam" -
+
+    # Index the sorted BAM
+    samtools index "$ALIGN_DIR/${SAMPLE}.aligned.sorted.bam"
+
+    echo "Finished aligning $SAMPLE"
+
+done
+
+echo "All alignment complete!"
+
+ls -lh "$ALIGN_DIR"
+
+echo "Finished: $(date)"
     
 
