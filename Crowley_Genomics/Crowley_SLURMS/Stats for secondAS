@@ -1,0 +1,162 @@
+#do statistical analysis of second run of AS FR_CP to add to the already made tables using trimmed bams from python
+
+secondAS_readstats.py
+
+import pysam
+import csv
+import os
+import math
+
+INPUT_DIR = "/nfs7/external/Denver_Lab/JCrowley/trimmed_secondAS_bams"
+
+OUTPUT_CSV = "/nfs7/external/Denver_Lab/JCrowley/AS2_read_statistics.csv"
+
+# ONLY these two samples will be processed
+samples = {
+    "CA1": ("SQK-NBD114-24_barcode01.trimmed.bam", "01"),
+    "T1": ("SQK-NBD114-24_barcode02.trimmed.bam", "02")
+}
+
+
+def percentile(values, p):
+    values = sorted(values)
+    position = (len(values) - 1) * p
+    lower = math.floor(position)
+    upper = math.ceil(position)
+
+    if lower == upper:
+        return values[lower]
+
+    return (
+        values[lower] * (upper - position)
+        + values[upper] * (position - lower)
+    )
+
+
+def calculate_stats(bam_path, sample, barcode):
+
+    lengths = []
+    all_qualities = []
+    q20_count = 0
+    q30_count = 0
+    total_bases = 0
+    gc_count = 0
+    gc_denominator = 0
+
+    with pysam.AlignmentFile(bam_path, "rb") as bam:
+
+        for read in bam:
+
+            if read.is_secondary or read.is_supplementary:
+                continue
+
+            sequence = read.query_sequence
+
+            if sequence is None:
+                continue
+
+            sequence = sequence.upper()
+            lengths.append(len(sequence))
+
+            gc_count += sequence.count("G") + sequence.count("C")
+            gc_denominator += sum(sequence.count(b) for b in "ACGT")
+
+            qualities = read.query_qualities
+
+            if qualities is not None:
+                all_qualities.extend(qualities)
+                total_bases += len(qualities)
+                q20_count += sum(q >= 20 for q in qualities)
+                q30_count += sum(q >= 30 for q in qualities)
+
+    if not lengths:
+        raise ValueError(f"No usable reads found for {sample}")
+
+    sorted_lengths = sorted(lengths, reverse=True)
+    total_length = sum(sorted_lengths)
+
+    cumulative = 0
+    n50 = 0
+    n50_num = 0
+
+    for length in sorted_lengths:
+        cumulative += length
+        n50_num += 1
+
+        if cumulative >= total_length / 2:
+            n50 = length
+            break
+
+    return {
+        "Sample": sample,
+        "Mean_Length(bp)": round(sum(lengths) / len(lengths), 2),
+        "Median_Length(bp)": round(percentile(lengths, 0.50), 2),
+        "Max_Length(bp)": max(lengths),
+        "N50": n50,
+        "N50_Num": n50_num,
+        "Q20_Percent": round(100 * q20_count / total_bases, 2) if total_bases else 0,
+        "Q30_Percent": round(100 * q30_count / total_bases, 2) if total_bases else 0,
+        "Avg_Quality": round(sum(all_qualities) / len(all_qualities), 2) if all_qualities else 0,
+        "GC_Percent": round(100 * gc_count / gc_denominator, 2) if gc_denominator else 0,
+        "Q1": round(percentile(lengths, 0.25), 2),
+        "Q3": round(percentile(lengths, 0.75), 2),
+        "Barcode": barcode
+    }
+
+
+columns = [
+    "Sample", "Mean_Length(bp)", "Median_Length(bp)",
+    "Max_Length(bp)", "N50", "N50_Num", "Q20_Percent",
+    "Q30_Percent", "Avg_Quality", "GC_Percent",
+    "Q1", "Q3", "Barcode"
+]
+
+results = []
+
+for sample, (filename, barcode) in samples.items():
+
+    bam_path = os.path.join(INPUT_DIR, filename)
+
+    print(f"Calculating statistics for {sample}...")
+
+    if not os.path.exists(bam_path):
+        raise FileNotFoundError(bam_path)
+
+    results.append(calculate_stats(bam_path, sample, barcode))
+
+with open(OUTPUT_CSV, "w", newline="") as csvfile:
+    writer = csv.DictWriter(csvfile, fieldnames=columns)
+    writer.writeheader()
+    writer.writerows(results)
+
+print("\nStatistics complete!")
+print(f"Results saved to: {OUTPUT_CSV}")
+
+for result in results:
+    print(result)
+
+
+secondAS_readstats.sh
+
+#!/bin/bash
+#SBATCH -p cqls_gpu
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=16G
+#SBATCH --time=02:00:00
+#SBATCH --output=readstats2_%j.out
+#SBATCH --error=readstats2_%j.err
+#SBATCH --job-name=AS2_ReadStats
+
+set -euo pipefail
+
+# Move to your working directory
+cd /nfs7/external/Denver_Lab/JCrowley
+
+echo "Starting read statistics: $(date)"
+
+# Run Python script
+python secondAS_readstats.py
+
+echo "Statistics complete: $(date)"
